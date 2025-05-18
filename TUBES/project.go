@@ -82,17 +82,6 @@ func input(A *tabBahan, n *int) {
 	}
 }
 
-// untuk menampilkan data
-// func show(A tabBahan, n int) {
-// 	var i int
-// 	fmt.Println("NO	Nama		Jumlah	Kadaluarsa	Status")
-// 	for i = 0; i < n; i++ {
-// 		if A[i].nama != "" {
-// 			fmt.Printf("%v	%v		%v	%v	%v\n", i+1, A[i].nama, A[i].jumlah, A[i].tglKadaluarsa, A[i].status)
-// 		}
-// 	}
-// }
-
 // menampilkan data
 func show(A tabBahan, n int) {
 	fmt.Println("\nTanggal Sekarang: ", time.Now().Format("02-01-2006"))
