@@ -44,16 +44,19 @@ func main() {
 		case 3:
 			update(&data, n)
 		case 4:
-			delete(&data, &n)
-		case 5:
 			search(&data, n)
+		case 5:
+			sorting(&data, n)
 		case 6:
+			delete(&data, &n)
+		case 7:
 			fmt.Println("Keluar dari program")
 			return
 		default:
 			fmt.Println("Pilihan tidak valid")
 		}
 	}
+
 }
 
 // untuk menampilkan menu
@@ -62,9 +65,10 @@ func menu() {
 	fmt.Println("1. INFO")
 	fmt.Println("2. Input")
 	fmt.Println("3. Update")
-	fmt.Println("4. Delete")
-	fmt.Println("5. Cari")
-	fmt.Println("6. Keluar")
+	fmt.Println("4. Cari")
+	fmt.Println("5. Sorting")
+	fmt.Println("6. Delete")
+	fmt.Println("7. Keluar")
 	fmt.Print("Masukkan Pilihan: ")
 }
 
@@ -266,6 +270,139 @@ func search(A *tabBahan, n int) {
 			fmt.Println("Bahan tidak ditemukan.")
 		}
 	}
+}
+
+func menuSorting() {
+	fmt.Println("\n===== Sorting =====")
+	fmt.Println("1. A-Z")
+	fmt.Println("2. Z-A")
+	fmt.Println("3. Terbanyak")
+	fmt.Println("4. Paling Sedikit")
+	fmt.Println("5. Paling Lama (Kadaluarsa)")
+	fmt.Println("6. Paling Dekat (Kadaluarsa)")
+	fmt.Print("Masukkan Pilihan: ")
+}
+
+func sorting(A *tabBahan, n int) {
+	var i, idx, pass int
+	var temp bahan
+	var p int
+
+	menuSorting()
+	fmt.Scan(&p)
+
+	if p == 1 { // sorting berdasarkan nama dari A
+		pass = 1
+
+		for pass < n {
+			idx = pass - 1
+			i = pass
+
+			for i < n {
+				if strings.ToLower(A[i].nama) < strings.ToLower(A[idx].nama) {
+					idx = i
+				}
+				i = i + 1
+			}
+			temp = A[pass-1]
+			A[pass-1] = A[idx]
+			A[idx] = temp
+			pass = pass + 1
+		}
+	} else if p == 2 {
+		pass = 1
+
+		for pass < n {
+			idx = pass - 1
+			i = pass
+
+			for i < n {
+				if strings.ToLower(A[i].nama) > strings.ToLower(A[idx].nama) {
+					idx = i
+				}
+				i = i + 1
+			}
+			temp = A[pass-1]
+			A[pass-1] = A[idx]
+			A[idx] = temp
+			pass = pass + 1
+		}
+	} else if p == 3 { // sorting berdasarkan jumlah dari yang paling banyak
+		pass = 1
+
+		for pass < n {
+			idx = pass - 1
+			i = pass
+
+			for i < n {
+				if A[i].jumlah > A[idx].jumlah {
+					idx = i
+				}
+				i = i + 1
+			}
+			temp = A[pass-1]
+			A[pass-1] = A[idx]
+			A[idx] = temp
+			pass = pass + 1
+		}
+	} else if p == 4 { // sorting berdasarkan jumlah dari yang paling sedikit
+		pass = 1
+
+		for pass < n {
+			idx = pass - 1
+			i = pass
+
+			for i < n {
+				if A[i].jumlah < A[idx].jumlah {
+					idx = i
+				}
+				i = i + 1
+			}
+			temp = A[pass-1]
+			A[pass-1] = A[idx]
+			A[idx] = temp
+			pass = pass + 1
+		}
+	} else if p == 5 { // sorting berdasarkan kadaluarsa paling jauh
+		pass = 1
+
+		for pass < n {
+			idx = pass - 1
+			i = pass
+
+			for i < n {
+				if A[i].kadaluarsa > A[idx].kadaluarsa {
+					idx = i
+				}
+				i = i + 1
+			}
+			temp = A[pass-1]
+			A[pass-1] = A[idx]
+			A[idx] = temp
+			pass = pass + 1
+		}
+	} else if p == 6 { // sorting berdasarkan kadaluarsa terdekat
+		pass = 1
+
+		for pass < n {
+			idx = pass - 1
+			i = pass
+
+			for i < n {
+				if A[i].kadaluarsa < A[idx].kadaluarsa {
+					idx = i
+				}
+				i = i + 1
+			}
+			temp = A[pass-1]
+			A[pass-1] = A[idx]
+			A[idx] = temp
+			pass = pass + 1
+		}
+	} else {
+		fmt.Println("piliha tidak valid")
+	}
+
 }
 
 // Dumy data
