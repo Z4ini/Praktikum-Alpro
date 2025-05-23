@@ -80,12 +80,12 @@ func input(A *tabBahan, n *int) {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Masukan Nama Bahan (ketik 'none' untuk berhenti): ")
-	input, _ := reader.ReadString('\n') // *ini digunakan agar dapat menginputkan multiple word ke array
+	input, _ := reader.ReadString('\n') // ini digunakan agar dapat menginputkan multiple word ke array
 	nama = strings.TrimSpace(input)
 
 	for nama != "none" && *n <= NMAX {
 		fmt.Print("Masukan Jumlah Bahan dan Kadaluarsa: ")
-		fmt.Scan(&jumlah, &kadaluarsa)
+		fmt.Scan(&jumlah, &kadaluarsa) // kadaluarsa yang dibaca dalam bentuk hari, misalkan sekarang tanggal 21 dan diinputkan 20 maka tanggal kadaluarsa yang masuk adalah 20 hari dari tanggal 21
 		reader.ReadString('\n') // digunakan agar tidak terjadi error
 		A[*n].nama = nama
 		A[*n].jumlah = jumlah
