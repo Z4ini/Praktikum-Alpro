@@ -9,7 +9,7 @@ import (
 const NMAX int = 1000 // batas jumlah array
 
 type bahan struct {
-	nama          string 
+	nama          string
 	status        string
 	jumlah        int
 	inDate        time.Time
@@ -40,6 +40,8 @@ func main() {
 		case 4:
 			delete(&data, &n)
 		case 5:
+			search(&data, n)
+		case 6:
 			fmt.Println("Keluar dari program")
 			return
 		default:
@@ -55,7 +57,8 @@ func menu() {
 	fmt.Println("2. Input")
 	fmt.Println("3. Update")
 	fmt.Println("4. Delete")
-	fmt.Println("5. Keluar")
+	fmt.Println("5. Cari")
+	fmt.Println("6. Keluar")
 	fmt.Print("Masukkan Pilihan: ")
 }
 
@@ -107,45 +110,57 @@ func update(A *tabBahan, n int) {
 	var p, jumlahBaru, kadaluarsaBaru int
 	var namaBaru string
 
-	show(*A, n)
+	if n < 0 {
+		fmt.Println("Data Masih kosong")
+	} else {
+		show(*A, n)
 
-	fmt.Print("Edit Data ke? ")
-	fmt.Scan(&p)
+		fmt.Print("Edit Data ke? ")
+		fmt.Scan(&p)
 
-	if p < 1 || p > n {
-		fmt.Println("Data tidak ditemukan")
-		return
+		if p < 1 || p > n {
+			fmt.Println("Data tidak ditemukan")
+			return
+		}
+
+		fmt.Println("Masukkan data bahan (nama jumlah kadaluarsa)")
+
+		fmt.Scan(&namaBaru, &jumlahBaru, &kadaluarsaBaru)
+		A[p-1].nama = namaBaru
+		A[p-1].jumlah = jumlahBaru
+		A[p-1].kadaluarsa = kadaluarsaBaru
+		A[p-1].inDate = time.Now()
+		A[p-1].tglKadaluarsa = A[p-1].inDate.AddDate(0, 0, A[p-1].kadaluarsa)
+		A[p-1].status = cekStatus(A[p-1])
 	}
 
-	fmt.Scan(&namaBaru, &jumlahBaru, &kadaluarsaBaru)
-	A[p-1].nama = namaBaru
-	A[p-1].jumlah = jumlahBaru
-	A[p-1].kadaluarsa = kadaluarsaBaru
-	A[p-1].inDate = time.Now()
-	A[p-1].tglKadaluarsa = A[p-1].inDate.AddDate(0, 0, A[p-1].kadaluarsa)
-	A[p-1].status = cekStatus(A[p-1])
 }
 
 // untuk menghapus data
 func delete(A *tabBahan, n *int) {
 	var i, p int
 
-	show(*A, *n)
+	if *n < 0 {
+		fmt.Println("Data masih kosong")
+	} else {
+		show(*A, *n)
 
-	fmt.Print("Hapus Data ke? ")
-	fmt.Scan(&p)
+		fmt.Print("Hapus Data ke? ")
+		fmt.Scan(&p)
 
-	if p < 1 || p > *n {
-		fmt.Println("Data tidak ditemukan")
-		return
+		if p < 1 || p > *n {
+			fmt.Println("Data tidak ditemukan")
+			return
+		}
+
+		for i = p - 1; i < *n-1; i++ {
+			A[i] = A[i+1]
+		}
+
+		*n--
+		fmt.Println("Data berhasil di hapus")
 	}
 
-	for i = p - 1; i < *n-1; i++ {
-		A[i] = A[i+1]
-	}
-
-	*n--
-	fmt.Println("Data berhasil di hapus")
 }
 
 // untuk mengecek apakah akan kadaluarsa atau tidak
@@ -162,6 +177,47 @@ func cekStatus(B bahan) string {
 		return "Akan Kadaluarsa"
 	} else {
 		return "Aman"
+	}
+}
+
+// function untuk mencari data. mengembalikan nilai true or false (jika data yang dicari ada maka keluar true dan begitu sebaliknya)
+func sequentialSearch(A tabBahan, n int, keyword string) bool {
+	for i := 0; i < n; i++ {
+		if strings.ToLower(A[i].nama) == strings.ToLower(keyword){ // agar tidak menjadi case sensitive
+			return true
+		}
+	}
+	return false
+}
+
+
+// untuk menacari dan menampilkan barang yang dicari
+func search(A *tabBahan, n int) {
+	var keyword string
+	var hitung int
+
+	if n == 0 {
+		fmt.Println("Data masih kosong, tidak bisa mencari.")
+	} else {
+		fmt.Println("Masukkan nama bahan yang dicari:")
+		fmt.Scan(&keyword)
+
+		if sequentialSearch(*A, n, keyword) {
+			fmt.Println("Bahan ditemukan.")
+			fmt.Println("Detail bahan:")
+
+			for i := 0; i < n; i++ {
+				if strings.ToLower((*A)[i].nama) == strings.ToLower(keyword) { // agar tidak case sensitive jadi menggunakan string.ToLower
+					fmt.Printf("- %s | Jumlah: %d | Kadaluarsa: %s\n",
+						(*A)[i].nama, (*A)[i].jumlah,
+						(*A)[i].tglKadaluarsa.Format("2006-01-02"))
+					hitung++
+				}
+			}
+			fmt.Printf("Total ditemukan: %d item.\n", hitung)
+		} else {
+			fmt.Println("Bahan tidak ditemukan.")
+		}
 	}
 }
 
@@ -204,5 +260,62 @@ func dumyData(A *tabBahan, n *int) {
 	A[4].tglKadaluarsa = A[4].inDate.AddDate(0, 0, A[4].kadaluarsa)
 	A[4].status = cekStatus(A[4])
 
-	*n = 5
+	A[5].nama = "Telur"
+	A[5].jumlah = 12
+	A[5].kadaluarsa = 10
+	A[5].inDate = now
+	A[5].tglKadaluarsa = A[5].inDate.AddDate(0, 0, A[5].kadaluarsa)
+	A[5].status = cekStatus(A[5])
+
+	A[6].nama = "Keju"
+	A[6].jumlah = 1
+	A[6].kadaluarsa = 0
+	A[6].inDate = now.AddDate(0, 0, -1)
+	A[6].tglKadaluarsa = A[6].inDate.AddDate(0, 0, A[6].kadaluarsa)
+	A[6].status = cekStatus(A[6])
+
+	A[7].nama = "Brokoli"
+	A[7].jumlah = 4
+	A[7].kadaluarsa = 4
+	A[7].inDate = now
+	A[7].tglKadaluarsa = A[7].inDate.AddDate(0, 0, A[7].kadaluarsa)
+	A[7].status = cekStatus(A[7])
+
+	A[8].nama = "Ikan Tuna"
+	A[8].jumlah = 2
+	A[8].kadaluarsa = 7
+	A[8].inDate = now
+	A[8].tglKadaluarsa = A[8].inDate.AddDate(0, 0, A[8].kadaluarsa)
+	A[8].status = cekStatus(A[8])
+
+	A[9].nama = "Roti"
+	A[9].jumlah = 5
+	A[9].kadaluarsa = 2
+	A[9].inDate = now.AddDate(0, 0, -1)
+	A[9].tglKadaluarsa = A[9].inDate.AddDate(0, 0, A[9].kadaluarsa)
+	A[9].status = cekStatus(A[9])
+
+	A[10].nama = "Ikan Lele"
+	A[10].jumlah = 6
+	A[10].kadaluarsa = 5
+	A[10].inDate = now
+	A[10].tglKadaluarsa = A[10].inDate.AddDate(0, 0, A[10].kadaluarsa)
+	A[10].status = cekStatus(A[10])
+
+	A[11].nama = "Ikan Mujair"
+	A[11].jumlah = 3
+	A[11].kadaluarsa = 2
+	A[11].inDate = now
+	A[11].tglKadaluarsa = A[11].inDate.AddDate(0, 0, A[11].kadaluarsa)
+	A[11].status = cekStatus(A[11])
+
+	A[12].nama = "Ikan Salmon"
+	A[12].jumlah = 1
+	A[12].kadaluarsa = 8
+	A[12].inDate = now
+	A[12].tglKadaluarsa = A[12].inDate.AddDate(0, 0, A[12].kadaluarsa)
+	A[12].status = cekStatus(A[12])
+
+	*n = 13
+
 }
