@@ -34,7 +34,7 @@ func main() {
 	for {
 		menu() // memanggil fungsi menu
 		fmt.Scan(&p)
-		reader.ReadString('\n') // untuk membaca newline
+		reader.ReadString('\n') // untuk membaca newline (agar bisa menggunakan reader setelah melakukan fmt.scan)
 
 		switch p {
 		case 1:
@@ -86,7 +86,7 @@ func input(A *tabBahan, n *int) {
 	for nama != "none" && *n <= NMAX {
 		fmt.Print("Masukan Jumlah Bahan dan Kadaluarsa: ")
 		fmt.Scan(&jumlah, &kadaluarsa) // kadaluarsa yang dibaca dalam bentuk hari, misalkan sekarang tanggal 21 dan diinputkan 20 maka tanggal kadaluarsa yang masuk adalah 20 hari dari tanggal 21
-		reader.ReadString('\n') // digunakan agar tidak terjadi error
+		reader.ReadString('\n')        // digunakan agar tidak terjadi error
 		A[*n].nama = nama
 		A[*n].jumlah = jumlah
 		A[*n].kadaluarsa = kadaluarsa
@@ -223,51 +223,150 @@ func sequentialSearch(A tabBahan, n int, keyword string) bool {
 	return false
 }
 
-// untuk menacari dan menampilkan barang yang dicari
-func search(A *tabBahan, n int) {
-	var keyword string
-	var hitung int
+// Binary search pertama untuk status (data sudah diurutkan)
+func BinarySearchFirstStatus(A tabBahan, n int, target string) int {
+	low, high := 0, n-1
+	first := -1
+	target = strings.ToLower(target)
 
-	reader := bufio.NewReader(os.Stdin)
+	for low <= high {
+		mid := (low + high) / 2
+		statusMid := strings.ToLower(A[mid].status)
 
-	if n == 0 {
-		fmt.Println("Data masih kosong, tidak bisa mencari.")
-	} else {
-		fmt.Print("Masukkan nama bahan yang dicari: ")
-		input, _ := reader.ReadString('\n') // *ini digunakan agar dapat menginputkan multiple word ke array
-		keyword = strings.TrimSpace(input)
-
-		if sequentialSearch(*A, n, keyword) {
-			fmt.Println("Bahan ditemukan.")
-			fmt.Println("Detail bahan: ")
-
-			fmt.Println(strings.Repeat("=", 70))
-
-			fmt.Printf("%-4s | %-20s | %-8s | %-15s | %-20s\n", "NO", "Nama", "Jumlah", "Kadaluarsa", "Status")
-
-			fmt.Println(strings.Repeat("-", 70))
-
-			for i := 0; i < n; i++ {
-				if strings.Contains(strings.ToLower((*A)[i].nama), strings.ToLower(keyword)) { // agar tidak case sensitive jadi menggunakan string.ToLower
-					fmt.Printf(
-						"%-4d | %-20s | %-8d | %-15s | %-20s\n",
-						i+1,
-						A[i].nama,
-						A[i].jumlah,
-						A[i].tglKadaluarsa.Format("02-01-2006"),
-						A[i].status,
-					)
-					hitung++
-				}
-			}
-			fmt.Println(strings.Repeat("=", 70))
-
-			fmt.Printf("Total ditemukan: %d item.\n", hitung)
-
-			fmt.Println(strings.Repeat("=", 70))
-
+		if statusMid == target {
+			first = mid
+			high = mid - 1
+		} else if statusMid < target {
+			low = mid + 1
 		} else {
-			fmt.Println("Bahan tidak ditemukan.")
+			high = mid - 1
+		}
+	}
+	return first
+}
+
+// Binary search terakhir untuk status
+func BinarySearchLastStatus(A tabBahan, n int, target string) int {
+	low, high := 0, n-1
+	last := -1
+	target = strings.ToLower(target)
+
+	for low <= high {
+		mid := (low + high) / 2
+		statusMid := strings.ToLower(A[mid].status)
+
+		if statusMid == target {
+			last = mid
+			low = mid + 1
+		} else if statusMid < target {
+			low = mid + 1
+		} else {
+			high = mid - 1
+		}
+	}
+	return last
+}
+
+func sortingStatus(A *tabBahan, n int) {
+	var i, idx, pass int
+	var temp bahan
+
+	pass = 1
+	for pass < n {
+		idx = pass - 1
+		i = pass
+
+		for i < n {
+			if strings.ToLower(A[i].status) < strings.ToLower(A[idx].status) {
+				idx = i
+			}
+			i++
+		}
+		temp = A[pass-1]
+		A[pass-1] = A[idx]
+		A[idx] = temp
+		pass++
+	}
+}
+
+func search(A *tabBahan, n int) {
+	reader := bufio.NewReader(os.Stdin)
+	lanjut := true
+
+	for lanjut {
+		if n == 0 {
+			fmt.Println("Data kosong, tidak bisa mencari.")
+		} else {
+			fmt.Println("Pilih metode pencarian:")
+			fmt.Println("1. Cari berdasarkan nama (sequential search)")
+			fmt.Println("2. Cari berdasarkan status (binary search dengan sorting otomatis)")
+			fmt.Print("Masukkan pilihan: ")
+
+			var pilih int
+			fmt.Scan(&pilih)
+			fmt.Scanln() // buang newline
+
+			if pilih == 1 {
+				fmt.Print("Masukkan nama bahan yang dicari: ")
+				input, _ := reader.ReadString('\n')
+				keyword := strings.TrimSpace(input)
+
+				if sequentialSearch(*A, n, keyword) {
+					fmt.Println("Bahan ditemukan.")
+					fmt.Println("Detail bahan:")
+
+					fmt.Println(strings.Repeat("=", 70))
+					fmt.Printf("%-4s | %-20s | %-8s | %-15s | %-20s\n", "NO", "Nama", "Jumlah", "Kadaluarsa", "Status")
+					fmt.Println(strings.Repeat("-", 70))
+
+					count := 0
+					for i := 0; i < n; i++ {
+						if strings.Contains(strings.ToLower((*A)[i].nama), strings.ToLower(keyword)) {
+							fmt.Printf("%-4d | %-20s | %-8d | %-15s | %-20s\n", i+1, A[i].nama, A[i].jumlah, A[i].tglKadaluarsa.Format("02-01-2006"), A[i].status)
+							count++
+						}
+					}
+					fmt.Println(strings.Repeat("=", 70))
+					fmt.Printf("Total ditemukan: %d item.\n", count)
+					fmt.Println(strings.Repeat("=", 70))
+				} else {
+					fmt.Println("Bahan tidak ditemukan.")
+				}
+			} else if pilih == 2 {
+				sortingStatus(A, n) // sorting status
+
+				fmt.Print("Masukkan status yang dicari (Aman, Akan Kadaluarsa, Segera Kadaluarsa, Sudah Kadaluarsa): ")
+				input, _ := reader.ReadString('\n')
+				target := strings.TrimSpace(input)
+
+				first := BinarySearchFirstStatus(*A, n, target)
+				last := BinarySearchLastStatus(*A, n, target)
+
+				if first == -1 || last == -1 || first > last {
+					fmt.Println("Status tidak ditemukan.")
+				} else {
+					fmt.Println(strings.Repeat("=", 70))
+					fmt.Printf("%-4s | %-20s | %-8s | %-15s | %-20s\n", "NO", "Nama", "Jumlah", "Kadaluarsa", "Status")
+					fmt.Println(strings.Repeat("-", 70))
+
+					for i := first; i <= last; i++ {
+						fmt.Printf("%-4d | %-20s | %-8d | %-15s | %-20s\n",
+							i+1, A[i].nama, A[i].jumlah, A[i].tglKadaluarsa.Format("02-01-2006"), A[i].status)
+					}
+					fmt.Println(strings.Repeat("=", 70))
+					fmt.Printf("Total ditemukan: %d item.\n", last-first+1)
+					fmt.Println(strings.Repeat("=", 70))
+				}
+			} else {
+				fmt.Println("Pilihan tidak valid")
+			}
+		}
+
+		fmt.Print("Mau cari lagi? (y/n): ")
+		jawaban, _ := reader.ReadString('\n')
+		jawaban = strings.TrimSpace(jawaban)
+		if strings.ToLower(jawaban) != "y" {
+			lanjut = false
 		}
 	}
 }
@@ -278,8 +377,8 @@ func menuSorting() {
 	fmt.Println("2. Z-A")
 	fmt.Println("3. Terbanyak")
 	fmt.Println("4. Paling Sedikit")
-	fmt.Println("5. Paling Lama (Kadaluarsa)")
-	fmt.Println("6. Paling Dekat (Kadaluarsa)")
+	fmt.Println("5. Paling Lama (Kadaluarsa)")  // menggunakan insertion sorting
+	fmt.Println("6. Paling Dekat (Kadaluarsa)") // menggunakan insertion sorting
 	fmt.Print("Masukkan Pilihan: ")
 }
 
@@ -309,7 +408,7 @@ func sorting(A *tabBahan, n int) {
 			A[idx] = temp
 			pass = pass + 1
 		}
-	} else if p == 2 {
+	} else if p == 2 { // sorting berdasarkan nama dsari Z
 		pass = 1
 
 		for pass < n {
@@ -366,38 +465,28 @@ func sorting(A *tabBahan, n int) {
 	} else if p == 5 { // sorting berdasarkan kadaluarsa paling jauh
 		pass = 1
 
-		for pass < n {
-			idx = pass - 1
+		for pass <= n-1 {
 			i = pass
-
-			for i < n {
-				if A[i].kadaluarsa > A[idx].kadaluarsa {
-					idx = i
-				}
-				i = i + 1
+			temp = A[pass]
+			for i > 0 && temp.kadaluarsa > A[i-1].kadaluarsa {
+				A[i] = A[i-1]
+				i--
 			}
-			temp = A[pass-1]
-			A[pass-1] = A[idx]
-			A[idx] = temp
-			pass = pass + 1
+			A[i] = temp
+			pass++
 		}
 	} else if p == 6 { // sorting berdasarkan kadaluarsa terdekat
 		pass = 1
 
-		for pass < n {
-			idx = pass - 1
+		for pass <= n-1 {
 			i = pass
-
-			for i < n {
-				if A[i].kadaluarsa < A[idx].kadaluarsa {
-					idx = i
-				}
-				i = i + 1
+			temp = A[pass]
+			for i > 0 && temp.kadaluarsa < A[i-1].kadaluarsa {
+				A[i] = A[i-1]
+				i--
 			}
-			temp = A[pass-1]
-			A[pass-1] = A[idx]
-			A[idx] = temp
-			pass = pass + 1
+			A[i] = temp
+			pass++
 		}
 	} else {
 		fmt.Println("piliha tidak valid")
