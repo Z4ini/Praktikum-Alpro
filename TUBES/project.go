@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+func Clear() { fmt.Printf("\x1bc") } 		//Fungsi untuk clear program sebelumnya di CMD
+
 const NMAX int = 1000 // batas jumlah array
 
 type bahan struct {
@@ -38,7 +40,7 @@ func main() {
 
 		switch p {
 		case 1:
-			show(data, n)
+			showOnly(data, n)
 		case 2:
 			input(&data, &n)
 		case 3:
@@ -51,6 +53,7 @@ func main() {
 			delete(&data, &n)
 		case 7:
 			fmt.Println("Keluar dari program")
+			Clear()
 			return
 		default:
 			fmt.Println("Pilihan tidak valid")
@@ -61,6 +64,7 @@ func main() {
 
 // untuk menampilkan menu
 func menu() {
+	Clear()
 	fmt.Println("\n===== MENU =====")
 	fmt.Println("1. INFO")
 	fmt.Println("2. Input")
@@ -74,6 +78,7 @@ func menu() {
 
 // untuk membuat data baru
 func input(A *tabBahan, n *int) {
+	Clear()
 	var jumlah, kadaluarsa int
 	var nama string
 
@@ -103,7 +108,43 @@ func input(A *tabBahan, n *int) {
 }
 
 // menampilkan data
+func showOnly(A tabBahan, n int) {
+	Clear()
+	var p string
+	// Tampilkan tanggal sekarang dengan format dd-mm-yyyy
+	fmt.Println("\nTanggal Sekarang:", time.Now().Format("02-01-2006"))
+	fmt.Println(strings.Repeat("=", 70))
+
+	// Header tabel
+	fmt.Printf("%-4s | %-20s | %-8s | %-15s | %-20s\n", "NO", "Nama", "Jumlah", "Kadaluarsa", "Status")
+	fmt.Println(strings.Repeat("-", 70))
+
+	// Isi tabel
+	for i := 0; i < n; i++ {
+		if A[i].nama != "" {
+			fmt.Printf(
+				"%-4d | %-20s | %-8d | %-15s | %-20s\n",
+				i+1,
+				A[i].nama,
+				A[i].jumlah,
+				A[i].tglKadaluarsa.Format("02-01-2006"),
+				A[i].status,
+			)
+		}
+	}
+
+	fmt.Println(strings.Repeat("=", 70))
+	fmt.Print("Kembali Ke Menu? (y): ")
+	fmt.Scan(&p)
+
+	if p == strings.ToLower("y") {
+		return
+	} 
+}
+
+// menampilkan data
 func show(A tabBahan, n int) {
+	Clear()
 	// Tampilkan tanggal sekarang dengan format dd-mm-yyyy
 	fmt.Println("\nTanggal Sekarang:", time.Now().Format("02-01-2006"))
 	fmt.Println(strings.Repeat("=", 70))
@@ -131,44 +172,61 @@ func show(A tabBahan, n int) {
 
 // untuk mengedit data yang sudah ada
 func update(A *tabBahan, n int) {
+	Clear()
 	var p, jumlahBaru, kadaluarsaBaru int
 	var namaBaru string
+	var lanjut bool
+
+	lanjut = true
 
 	reader := bufio.NewReader(os.Stdin)
 
-	if n < 0 {
-		fmt.Println("Data Masih kosong")
-	} else {
-		show(*A, n)
-
-		fmt.Print("Edit Data ke? ")
-		fmt.Scan(&p)
-		reader.ReadString('\n')
-
-		if p < 1 || p > n {
-			fmt.Println("Data tidak ditemukan")
-			return
+	for lanjut {
+		if n < 0 {
+			fmt.Println("Data Masih kosong")
+		} else {
+			show(*A, n)
+	
+			fmt.Print("Edit Data ke? ")
+			fmt.Scan(&p)
+			reader.ReadString('\n')
+	
+			if p < 1 || p > n {
+				fmt.Println("Data tidak ditemukan")
+				return
+			}
+	
+			fmt.Print("Masukan Nama Bahan: ")
+			input, _ := reader.ReadString('\n')
+			namaBaru = strings.TrimSpace(input)
+	
+			fmt.Print("Masukan Jumlah Bahan dan Kadaluarsa: ")
+			fmt.Scan(&jumlahBaru, &kadaluarsaBaru)
+			reader.ReadString('\n')
+	
+			A[p-1].nama = namaBaru
+			A[p-1].jumlah = jumlahBaru
+			A[p-1].kadaluarsa = kadaluarsaBaru
+			A[p-1].inDate = time.Now()
+			A[p-1].tglKadaluarsa = A[p-1].inDate.AddDate(0, 0, A[p-1].kadaluarsa)
+			A[p-1].status = cekStatus(A[p-1])
+			
 		}
 
-		fmt.Print("Masukan Nama Bahan: ")
-		input, _ := reader.ReadString('\n')
-		namaBaru = strings.TrimSpace(input)
-
-		fmt.Print("Masukan Jumlah Bahan dan Kadaluarsa: ")
-		fmt.Scan(&jumlahBaru, &kadaluarsaBaru)
-
-		A[p-1].nama = namaBaru
-		A[p-1].jumlah = jumlahBaru
-		A[p-1].kadaluarsa = kadaluarsaBaru
-		A[p-1].inDate = time.Now()
-		A[p-1].tglKadaluarsa = A[p-1].inDate.AddDate(0, 0, A[p-1].kadaluarsa)
-		A[p-1].status = cekStatus(A[p-1])
+		fmt.Print("Mau edit lagi? (y/n): ")
+		jawaban, _ := reader.ReadString('\n')
+		jawaban = strings.TrimSpace(jawaban)
+		Clear()
+		if strings.ToLower(jawaban) != "y" {
+			lanjut = false
+		}
 	}
 
 }
 
 // untuk menghapus data
 func delete(A *tabBahan, n *int) {
+	Clear()
 	var i, p int
 
 	if *n < 0 {
@@ -268,6 +326,7 @@ func BinarySearchLastStatus(A tabBahan, n int, target string) int {
 }
 
 func sortingStatus(A *tabBahan, n int) {
+	Clear()
 	var i, idx, pass int
 	var temp bahan
 
@@ -290,6 +349,7 @@ func sortingStatus(A *tabBahan, n int) {
 }
 
 func search(A *tabBahan, n int) {
+	Clear()
 	reader := bufio.NewReader(os.Stdin)
 	lanjut := true
 
@@ -307,6 +367,7 @@ func search(A *tabBahan, n int) {
 			fmt.Scanln() // buang newline
 
 			if pilih == 1 {
+				Clear()
 				fmt.Print("Masukkan nama bahan yang dicari: ")
 				input, _ := reader.ReadString('\n')
 				keyword := strings.TrimSpace(input)
@@ -333,6 +394,7 @@ func search(A *tabBahan, n int) {
 					fmt.Println("Bahan tidak ditemukan.")
 				}
 			} else if pilih == 2 {
+				Clear()
 				sortingStatus(A, n) // sorting status
 
 				fmt.Print("Masukkan status yang dicari (Aman, Akan Kadaluarsa, Segera Kadaluarsa, Sudah Kadaluarsa): ")
@@ -365,6 +427,7 @@ func search(A *tabBahan, n int) {
 		fmt.Print("Mau cari lagi? (y/n): ")
 		jawaban, _ := reader.ReadString('\n')
 		jawaban = strings.TrimSpace(jawaban)
+		Clear()
 		if strings.ToLower(jawaban) != "y" {
 			lanjut = false
 		}
@@ -372,6 +435,7 @@ func search(A *tabBahan, n int) {
 }
 
 func menuSorting() {
+	Clear()
 	fmt.Println("\n===== Sorting =====")
 	fmt.Println("1. A-Z")
 	fmt.Println("2. Z-A")
@@ -383,6 +447,7 @@ func menuSorting() {
 }
 
 func sorting(A *tabBahan, n int) {
+	Clear()
 	var i, idx, pass int
 	var temp bahan
 	var p int
